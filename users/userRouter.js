@@ -18,7 +18,7 @@ router.post('/:id/posts', (req, res) => {
 
 });
 
-router.post('/', (req, res) => {
+router.post('/', validateUser, (req, res) => {
     const newUser = req.body
 
     db.insert(newUser)
@@ -30,7 +30,7 @@ router.post('/', (req, res) => {
         })
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUserId, (req, res) => {
     const { id } = req.params
     console.log('get by id', id)
     db.getById(id)
@@ -51,9 +51,6 @@ router.get('/:id/posts', (req, res) => {
 
     db.getUserPosts(userId)
     .then(posts => {
-        if (posts.length === 0) {
-            res.status(404).json({message: 'specified user id not found'})
-        }
         res.status(200).json(posts)
     })
     .catch(e => {
@@ -79,7 +76,7 @@ router.delete('/:id', (req, res) => {
         })
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, (req, res) => {
     const { id } = req.params
     const changes = req.body
 
@@ -94,10 +91,49 @@ router.put('/:id', (req, res) => {
 
 //custom middleware
 
-function validateUserId (req, res, next) {}
+function validateUserId (req, res, next) {
+    let id = req.params.id
+    let user = {}
+    db.getById(id)
+        .then(result => {
+            if (result) {
+                user = req.user;
+                console.log('user validated')
+            } else {
+                res.status(404).json({ message: "invalid user id" })
+            }
+        })
+        .catch(e => {
+            res.status(500).json({error: 'error accessing specified user in database'})
+        })
+    
 
-function validateUser (req, res, next) {}
+    next()
+}
+
+function isEmpty(obj) {
+    for(var key in obj) {
+        if(obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
+}
+
+function validateUser (req, res, next) {
+    const newUser = req.body
+    
+    isEmpty(newUser) ? res.status(400).json({ message: "missing user data" }) : 
+    !newUser.name ? res.status(400).json({ message: "missing required name field" }) :
+    console.log('user validated')
+
+    next()
+}
 
 function validatePost (req, res, next) {}
 
 module.exports = router;
+
+// `validateUser()`
+// - `validateUser` validates the `body` on a request to create a new user
+// - if the request `body` is missing, cancel the request and respond with status `400` and `{ message: "missing user data" }`
+// - if the request `body` is missing the required `name` field, cancel the request and respond with status `400` and `{ message: "missing required name field" }`
