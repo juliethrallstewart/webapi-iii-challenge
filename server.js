@@ -1,6 +1,13 @@
 const express = require('express');
+const helmet = require('helmet');
+
+const secrets = require('./config/secrets');
+
+console.log('environment:', secrets.environment);
 
 const server = express();
+// server.use(helmet());
+
 
 server.get('/', (req, res) => {
 	res.send(`<h2>Let's write some middleware!</h2>`);
@@ -13,6 +20,8 @@ const userRouter = require('./users/userRouter');
 // global middleware
 server.use(express.json());
 server.use(logger);
+server.use(helmet());
+
 
 // local middleware
 
