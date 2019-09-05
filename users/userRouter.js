@@ -14,9 +14,6 @@ router.get('/', (req, res) => {
     })
 });
 
-router.post('/:id/posts', (req, res) => {
-
-});
 
 router.post('/', validateUser, (req, res) => {
     const newUser = req.body
@@ -112,7 +109,7 @@ function validateUserId (req, res, next) {
 }
 
 function isEmpty(obj) {
-    for(var key in obj) {
+    for(let key in obj) {
         if(obj.hasOwnProperty(key))
             return false;
     }
@@ -121,7 +118,7 @@ function isEmpty(obj) {
 
 function validateUser (req, res, next) {
     const newUser = req.body
-    
+
     isEmpty(newUser) ? res.status(400).json({ message: "missing user data" }) : 
     !newUser.name ? res.status(400).json({ message: "missing required name field" }) :
     console.log('user validated')
@@ -129,11 +126,5 @@ function validateUser (req, res, next) {
     next()
 }
 
-function validatePost (req, res, next) {}
 
 module.exports = router;
-
-// `validateUser()`
-// - `validateUser` validates the `body` on a request to create a new user
-// - if the request `body` is missing, cancel the request and respond with status `400` and `{ message: "missing user data" }`
-// - if the request `body` is missing the required `name` field, cancel the request and respond with status `400` and `{ message: "missing required name field" }`
