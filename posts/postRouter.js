@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 
 const db = require('./postDb');
+const dbUsers = require('../users/userDb');
+
 
 router.get('/', (req, res) => {
     db.get()
@@ -63,7 +65,7 @@ router.delete('/:id', (req, res) => {
         })
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validatePostId, (req, res) => {
     const { id } = req.params
     const changes = req.body
     console.log(changes)
@@ -86,6 +88,7 @@ function isEmpty(obj) {
     return true;
 }
 
+// confirm post has a body, and contains text
 function validatePost (req, res, next) {
     const newPost = req.body
 
@@ -96,14 +99,16 @@ function validatePost (req, res, next) {
     next()
 }
 
+// validate post id is for existing post
+
 function validatePostId (req, res, next) {
     let id = req.params.id
-    let post = {}
+    console.log(id)
     db.getById(id)
         .then(result => {
             if (result) {
-                post = req.post;
-                console.log('post validated')
+                console.log('post validated', result)
+                next()
             } else {
                 res.status(404).json({ message: "invalid post id" })
             }
@@ -111,9 +116,7 @@ function validatePostId (req, res, next) {
         .catch(e => {
             res.status(500).json({error: 'error accessing specified post in database'})
         })
-    
-
-    next()
+       
 }
 
 module.exports = router;
