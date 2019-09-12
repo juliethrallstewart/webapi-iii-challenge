@@ -14,7 +14,6 @@ router.get('/', (req, res) => {
     })
 });
 
-
 router.post('/', validateUser, (req, res) => {
     const newUser = req.body
 
